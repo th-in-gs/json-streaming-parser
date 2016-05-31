@@ -28,8 +28,7 @@ See more at http://blog.squix.ch and https://github.com/squix78/json-streaming-p
 #include <Arduino.h>
 #include "JsonListener.h"
 
-#define STATE_START_DOCUMENT     0
-#define STATE_DONE               -1
+#define STATE_DONE               0
 #define STATE_IN_ARRAY           1
 #define STATE_IN_OBJECT          2
 #define STATE_END_KEY            3
@@ -121,13 +120,9 @@ class JsonStreamingParser {
     void processUnicodeCharacter(char c);
 
     void endObject();
-
-
     
   public:
-    JsonStreamingParser();
     void parse(char c);
     void setListener(JsonListener* listener);
-  
 };
 

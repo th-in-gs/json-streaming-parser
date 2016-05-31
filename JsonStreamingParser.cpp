@@ -25,14 +25,6 @@ See more at http://blog.squix.ch and https://github.com/squix78/json-streaming-p
 
 #include "JsonStreamingParser.h"
 
-JsonStreamingParser::JsonStreamingParser() {
-    state = STATE_START_DOCUMENT;
-    bufferPos = 0;
-    unicodeEscapeBufferPos = 0;
-    unicodeBufferPos = 0;
-    characterCounter = 0;
-}
-
 void JsonStreamingParser::setListener(JsonListener* listener) {
   myListener = listener;
 }
@@ -44,7 +36,7 @@ void JsonStreamingParser::parse(char c) {
     // http://stackoverflow.com/questions/16042274/definition-of-whitespace-in-json
     if ((c == ' ' || c == '\t' || c == '\n' || c == '\r')
         && !(state == STATE_IN_STRING || state == STATE_UNICODE || state == STATE_START_ESCAPE
-            || state == STATE_IN_NUMBER || state == STATE_START_DOCUMENT)) {
+            || state == STATE_IN_NUMBER || state == STATE_DONE)) {
       return;
     }
     switch (state) {
@@ -174,7 +166,7 @@ void JsonStreamingParser::parse(char c) {
         endNull();
       }
       break;
-    case STATE_START_DOCUMENT:
+    case STATE_DONE:
       myListener->startDocument();
       if (c == '[') {
         startArray();
@@ -254,7 +246,7 @@ void JsonStreamingParser::endArray() {
     }
     myListener->endArray();
     state = STATE_AFTER_VALUE;
-    if (stackPos == -1) {
+    if (stackPos == 0) {
       endDocument();
     }
   }
@@ -274,7 +266,7 @@ void JsonStreamingParser::endObject() {
     }
     myListener->endObject();
     state = STATE_AFTER_VALUE;
-    if (stackPos == -1) {
+    if (stackPos == 0) {
       endDocument();
     }
   }
@@ -416,6 +408,12 @@ int JsonStreamingParser::convertDecimalBufferToInt(char myArray[], int length) {
 void JsonStreamingParser::endDocument() {
     myListener->endDocument();
     state = STATE_DONE;
+    stackPos = 0;
+    bufferPos = 0;
+    characterCounter = 0;
+    unicodeBufferPos = 0;
+    unicodeEscapeBufferPos = 0;
+    unicodeHighSurrogate = 0;
   }
 
 void JsonStreamingParser::endTrue() {
